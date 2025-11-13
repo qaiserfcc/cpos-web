@@ -1,16 +1,80 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Cloud, Eye, EyeOff, Mail, Lock } from "lucide-react";
-import { useState } from "react";
+import { Cloud, Eye, EyeOff, Mail, Lock, AlertCircle } from "lucide-react";
+import { loginSchema, type LoginFormData } from "@/lib/validations";
+import { errorHandler } from "@/lib/error-handler";
+import { toast } from "@/hooks/use-toast";
+import { api, ApiError } from "@/lib/api";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm<LoginFormData>({
+    resolver: zodResolver(loginSchema),
+  });
+
+  const onSubmit = async (data: LoginFormData) => {
+    setIsLoading(true);
+
+    try {
+      const response = await api.post<{
+        message: string;
+        token: string;
+        user: { id: number; email: string; firstName: string; lastName: string };
+      }>('/auth/login', {
+        email: data.email,
+        password: data.password,
+      });
+
+      if (response.success && response.data) {
+        // Success
+        toast.success({
+          title: "Login successful!",
+          description: "Welcome back to Cloud POS.",
+        });
+
+        // Store token
+        localStorage.setItem('authToken', response.data.token);
+
+        // Redirect to dashboard (in real app)
+        // router.push("/dashboard");
+      } else {
+        throw new Error(response.message || 'Login failed');
+      }
+
+    } catch (error) {
+      // Handle different types of errors
+      if (error instanceof ApiError) {
+        if (error.status === 401) {
+          setError("email", { message: "Invalid email or password" });
+          setError("password", { message: "Invalid email or password" });
+        } else {
+          errorHandler.showError(error, "Login failed. Please try again.");
+        }
+      } else if (error instanceof Error) {
+        errorHandler.showError(error, "Login failed. Please try again.");
+      } else {
+        errorHandler.showError(error);
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900 flex items-center justify-center p-4">
@@ -38,7 +102,7 @@ export default function LoginPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <form className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium">
                   Email Address
@@ -49,11 +113,16 @@ export default function LoginPage() {
                     id="email"
                     type="email"
                     placeholder="Enter your email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
                     className="pl-10 glass border-white/20 focus:border-blue-500 transition-colors"
+                    {...register("email")}
                   />
                 </div>
+                {errors.email && (
+                  <p className="text-sm text-red-400 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -66,9 +135,8 @@ export default function LoginPage() {
                     id="password"
                     type={showPassword ? "text" : "password"}
                     placeholder="Enter your password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
                     className="pl-10 pr-10 glass border-white/20 focus:border-blue-500 transition-colors"
+                    {...register("password")}
                   />
                   <button
                     type="button"
@@ -82,6 +150,12 @@ export default function LoginPage() {
                     )}
                   </button>
                 </div>
+                {errors.password && (
+                  <p className="text-sm text-red-400 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.password.message}
+                  </p>
+                )}
               </div>
 
               <div className="flex items-center justify-between">
@@ -102,9 +176,17 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
+                disabled={isLoading}
                 className="w-full gradient-primary hover:opacity-90 transition-opacity py-3 text-lg font-medium"
               >
-                Sign In
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Signing in...
+                  </div>
+                ) : (
+                  "Sign In"
+                )}
               </Button>
             </form>
 

@@ -1,26 +1,115 @@
+"use client";
+
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { Cloud, Eye, EyeOff, Mail, Lock, User, Building } from "lucide-react";
-import { useState } from "react";
+import { Cloud, Mail, User, Building, AlertCircle, ChevronDown } from "lucide-react";
+import { registerSchema, type RegisterFormData } from "@/lib/validations";
+import { errorHandler } from "@/lib/error-handler";
+import { toast } from "@/hooks/use-toast";
+import { api, ApiError } from "@/lib/api";
+
+interface Role {
+  id: number;
+  name: string;
+  description: string;
+}
+
+interface Role {
+  id: number;
+  name: string;
+  description: string;
+}
 
 export default function RegisterPage() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    businessName: "",
-    password: "",
-    confirmPassword: "",
+  const [isLoading, setIsLoading] = useState(false);
+  const [roles, setRoles] = useState<Role[]>([]);
+  const [isLoadingRoles, setIsLoadingRoles] = useState(true);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    setError,
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
   });
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  // Fetch roles on component mount
+  useEffect(() => {
+    const fetchRoles = async () => {
+      try {
+        const response = await api.get<{ roles: Role[] }>('/auth/roles');
+        if (response.success && response.data) {
+          setRoles(response.data.roles);
+        } else {
+          throw new Error(response.message || 'Failed to fetch roles');
+        }
+      } catch (error) {
+        console.error('Error fetching roles:', error);
+        errorHandler.showError(error, "Failed to load roles. Please refresh the page.");
+        // Fallback to empty array
+        setRoles([]);
+      } finally {
+        setIsLoadingRoles(false);
+      }
+    };
+
+    fetchRoles();
+  }, []);
+
+  const onSubmit = async (data: RegisterFormData) => {
+    setIsLoading(true);
+
+    try {
+      const response = await api.post('/auth/register', {
+        email: data.email,
+        password: data.password,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        businessName: data.businessName,
+        roleId: parseInt(data.roleId),
+      });
+
+      if (response.success) {
+        // Success
+        toast.success({
+          title: "Account created successfully!",
+          description: "Welcome to Cloud POS. Please check your email for verification.",
+        });
+
+        // Redirect to login (in real app)
+        // router.push("/login");
+      } else {
+        throw new Error(response.message || 'Registration failed');
+      }
+
+    } catch (error) {
+      // Handle different types of errors
+      if (error instanceof ApiError) {
+        if (error.status === 400) {
+          // Validation errors
+          errorHandler.showError(error, "Please check your information and try again.");
+        } else if (error.status === 409) {
+          // User already exists
+          setError("email", { message: "An account with this email already exists" });
+        } else {
+          errorHandler.showError(error, "Registration failed. Please try again.");
+        }
+      } else if (error instanceof Error) {
+        errorHandler.showError(error, "Registration failed. Please try again.");
+      } else {
+        errorHandler.showError(error);
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -49,7 +138,7 @@ export default function RegisterPage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            <form className="space-y-4">
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName" className="text-sm font-medium">
@@ -61,11 +150,16 @@ export default function RegisterPage() {
                       id="firstName"
                       type="text"
                       placeholder="John"
-                      value={formData.firstName}
-                      onChange={(e) => handleInputChange("firstName", e.target.value)}
                       className="pl-10 glass border-white/20 focus:border-blue-500 transition-colors"
+                      {...register("firstName")}
                     />
                   </div>
+                  {errors.firstName && (
+                    <p className="text-sm text-red-400 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.firstName.message}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName" className="text-sm font-medium">
@@ -77,11 +171,16 @@ export default function RegisterPage() {
                       id="lastName"
                       type="text"
                       placeholder="Doe"
-                      value={formData.lastName}
-                      onChange={(e) => handleInputChange("lastName", e.target.value)}
                       className="pl-10 glass border-white/20 focus:border-blue-500 transition-colors"
+                      {...register("lastName")}
                     />
                   </div>
+                  {errors.lastName && (
+                    <p className="text-sm text-red-400 flex items-center gap-1">
+                      <AlertCircle className="w-4 h-4" />
+                      {errors.lastName.message}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -95,11 +194,16 @@ export default function RegisterPage() {
                     id="email"
                     type="email"
                     placeholder="john@company.com"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
                     className="pl-10 glass border-white/20 focus:border-blue-500 transition-colors"
+                    {...register("email")}
                   />
                 </div>
+                {errors.email && (
+                  <p className="text-sm text-red-400 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.email.message}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
@@ -112,92 +216,66 @@ export default function RegisterPage() {
                     id="businessName"
                     type="text"
                     placeholder="Your Business LLC"
-                    value={formData.businessName}
-                    onChange={(e) => handleInputChange("businessName", e.target.value)}
                     className="pl-10 glass border-white/20 focus:border-blue-500 transition-colors"
+                    {...register("businessName")}
                   />
                 </div>
+                {errors.businessName && (
+                  <p className="text-sm text-red-400 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.businessName.message}
+                  </p>
+                )}
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="password" className="text-sm font-medium">
-                  Password
+                <Label htmlFor="roleId" className="text-sm font-medium">
+                  Role
                 </Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Create a strong password"
-                    value={formData.password}
-                    onChange={(e) => handleInputChange("password", e.target.value)}
-                    className="pl-10 pr-10 glass border-white/20 focus:border-blue-500 transition-colors"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition-colors"
+                  <select
+                    id="roleId"
+                    className="w-full pl-10 pr-10 py-3 glass border-white/20 focus:border-blue-500 transition-colors rounded-md bg-white/10 text-gray-900 dark:text-gray-100 appearance-none"
+                    {...register("roleId")}
+                    disabled={isLoadingRoles}
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
+                    <option value="" className="bg-gray-50 dark:bg-gray-800">
+                      {isLoadingRoles ? "Loading roles..." : "Select a role"}
+                    </option>
+                    {roles.map((role) => (
+                      <option
+                        key={role.id}
+                        value={role.id}
+                        className="bg-gray-50 dark:bg-gray-800"
+                      >
+                        {role.name.charAt(0).toUpperCase() + role.name.slice(1)} - {role.description}
+                      </option>
+                    ))}
+                  </select>
+                  <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <ChevronDown className="absolute right-3 top-3 h-4 w-4 text-gray-400 pointer-events-none" />
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-sm font-medium">
-                  Confirm Password
-                </Label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                  <Input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Confirm your password"
-                    value={formData.confirmPassword}
-                    onChange={(e) => handleInputChange("confirmPassword", e.target.value)}
-                    className="pl-10 pr-10 glass border-white/20 focus:border-blue-500 transition-colors"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-3 text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="terms"
-                  className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
-                />
-                <label htmlFor="terms" className="text-sm text-gray-600 dark:text-gray-400">
-                  I agree to the{" "}
-                  <Link href="/terms" className="text-blue-600 hover:text-blue-500 transition-colors">
-                    Terms of Service
-                  </Link>{" "}
-                  and{" "}
-                  <Link href="/privacy" className="text-blue-600 hover:text-blue-500 transition-colors">
-                    Privacy Policy
-                  </Link>
-                </label>
+                {errors.roleId && (
+                  <p className="text-sm text-red-400 flex items-center gap-1">
+                    <AlertCircle className="w-4 h-4" />
+                    {errors.roleId.message}
+                  </p>
+                )}
               </div>
 
               <Button
                 type="submit"
+                disabled={isLoading}
                 className="w-full gradient-primary hover:opacity-90 transition-opacity py-3 text-lg font-medium"
               >
-                Create Account
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Creating account...
+                  </div>
+                ) : (
+                  "Create Account"
+                )}
               </Button>
             </form>
 
