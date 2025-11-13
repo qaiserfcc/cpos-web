@@ -4,6 +4,7 @@ import { Mail, MapPin } from "lucide-react"
 import { useReveal } from "@/hooks/use-reveal"
 import { useState, type FormEvent } from "react"
 import { MagneticButton } from "@/components/magnetic-button"
+import { Footer } from "@/components/footer"
 
 export function ContactSection() {
   const { ref, isVisible } = useReveal(0.3)
@@ -46,16 +47,18 @@ export function ContactSection() {
               }`}
             >
               <h2 className="mb-2 font-sans text-4xl font-light leading-[1.05] tracking-tight text-foreground md:mb-3 md:text-7xl lg:text-8xl">
-                Let's
+                Ready to
                 <br />
-                talk
+                transform your
+                <br />
+                retail business?
               </h2>
-              <p className="font-mono text-xs text-foreground/60 md:text-base">/ Get in touch</p>
+              <p className="font-mono text-xs text-foreground/60 md:text-base">/ Get started today</p>
             </div>
 
             <div className="space-y-4 md:space-y-8">
               <a
-                href="mailto:hello@studio.com"
+                href="mailto:sales@cloudpos.com"
                 className={`group block transition-all duration-700 ${
                   isVisible ? "translate-x-0 opacity-100" : "-translate-x-16 opacity-0"
                 }`}
@@ -63,10 +66,10 @@ export function ContactSection() {
               >
                 <div className="mb-1 flex items-center gap-2">
                   <Mail className="h-3 w-3 text-foreground/60" />
-                  <span className="font-mono text-xs text-foreground/60">Email</span>
+                  <span className="font-mono text-xs text-foreground/60">Sales</span>
                 </div>
                 <p className="text-base text-foreground transition-colors group-hover:text-foreground/70 md:text-2xl">
-                  hello@studio.com
+                  sales@cloudpos.com
                 </p>
               </a>
 
@@ -78,9 +81,9 @@ export function ContactSection() {
               >
                 <div className="mb-1 flex items-center gap-2">
                   <MapPin className="h-3 w-3 text-foreground/60" />
-                  <span className="font-mono text-xs text-foreground/60">Location</span>
+                  <span className="font-mono text-xs text-foreground/60">Support</span>
                 </div>
-                <p className="text-base text-foreground md:text-2xl">New York, NY</p>
+                <p className="text-base text-foreground md:text-2xl">24/7 Customer Support</p>
               </div>
 
               <div
@@ -111,14 +114,14 @@ export function ContactSection() {
                 }`}
                 style={{ transitionDelay: "200ms" }}
               >
-                <label className="mb-1 block font-mono text-xs text-foreground/60 md:mb-2">Name</label>
+                <label className="mb-1 block font-mono text-xs text-foreground/60 md:mb-2">Business Name</label>
                 <input
                   type="text"
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   required
                   className="w-full border-b border-foreground/30 bg-transparent py-1.5 text-sm text-foreground placeholder:text-foreground/40 focus:border-foreground/50 focus:outline-none md:py-2 md:text-base"
-                  placeholder="Your name"
+                  placeholder="Your business name"
                 />
               </div>
 
@@ -152,7 +155,7 @@ export function ContactSection() {
                   onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   required
                   className="w-full border-b border-foreground/30 bg-transparent py-1.5 text-sm text-foreground placeholder:text-foreground/40 focus:border-foreground/50 focus:outline-none md:py-2 md:text-base"
-                  placeholder="Tell us about your project..."
+                  placeholder="Tell us about your business needs..."
                 />
               </div>
 
@@ -178,6 +181,9 @@ export function ContactSection() {
           </div>
         </div>
       </div>
+
+      {/* Footer */}
+      <Footer />
     </section>
   )
 }

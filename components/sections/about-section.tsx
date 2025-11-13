@@ -21,11 +21,11 @@ export function AboutSection({ scrollToSection }: { scrollToSection?: (index: nu
               }`}
             >
               <h2 className="mb-3 font-sans text-3xl font-light leading-[1.1] tracking-tight text-foreground md:mb-4 md:text-6xl lg:text-7xl">
-                Building the
+                Powering retail
                 <br />
-                future of
+                success with
                 <br />
-                <span className="text-foreground/40">digital</span>
+                <span className="text-foreground/40">smart technology</span>
               </h2>
             </div>
 
@@ -36,11 +36,10 @@ export function AboutSection({ scrollToSection }: { scrollToSection?: (index: nu
               style={{ transitionDelay: "200ms" }}
             >
               <p className="max-w-md text-sm leading-relaxed text-foreground/90 md:text-lg">
-                We're a collective of designers, developers, and creative technologists obsessed with crafting
-                exceptional digital experiences.
+                CloudPOS transforms traditional retail operations with cloud-based technology that scales with your business.
               </p>
               <p className="max-w-md text-sm leading-relaxed text-foreground/90 md:text-lg">
-                Every project is an opportunity to explore new possibilities and push creative boundaries.
+                From single-store operations to multi-location enterprises, our platform provides the tools you need to thrive in today's competitive market.
               </p>
             </div>
           </div>
@@ -48,9 +47,9 @@ export function AboutSection({ scrollToSection }: { scrollToSection?: (index: nu
           {/* Right side - Stats with creative layout */}
           <div className="flex flex-col justify-center space-y-6 md:space-y-12">
             {[
-              { value: "150+", label: "Projects", sublabel: "Delivered worldwide", direction: "right" },
-              { value: "8", label: "Years", sublabel: "Of innovation", direction: "left" },
-              { value: "12", label: "Awards", sublabel: "Industry recognition", direction: "right" },
+              { value: "10K+", label: "Transactions", sublabel: "Processed daily", direction: "right" },
+              { value: "500+", label: "Businesses", sublabel: "Using our platform", direction: "left" },
+              { value: "99.9%", label: "Uptime", sublabel: "Reliable service", direction: "right" },
             ].map((stat, i) => {
               const getRevealClass = () => {
                 if (!isVisible) {

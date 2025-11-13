@@ -17,32 +17,32 @@ export function WorkSection() {
           }`}
         >
           <h2 className="mb-2 font-sans text-5xl font-light tracking-tight text-foreground md:text-6xl lg:text-7xl">
-            Featured
+            Features
           </h2>
-          <p className="font-mono text-sm text-foreground/60 md:text-base">/ Recent explorations</p>
+          <p className="font-mono text-sm text-foreground/60 md:text-base">/ Powerful capabilities for modern retail</p>
         </div>
 
         <div className="space-y-6 md:space-y-8">
           {[
             {
               number: "01",
-              title: "Kinetic Typography",
-              category: "Interactive Experience",
+              title: "Real-time Inventory",
+              category: "Smart Stock Management",
               year: "2024",
               direction: "left",
             },
             {
               number: "02",
-              title: "Generative Patterns",
-              category: "Visual System",
+              title: "Multi-location Support",
+              category: "Scalable Operations",
               year: "2024",
               direction: "right",
             },
             {
               number: "03",
-              title: "Spatial Interface",
-              category: "3D Navigation",
-              year: "2023",
+              title: "Advanced Analytics",
+              category: "Business Intelligence",
+              year: "2024",
               direction: "left",
             },
           ].map((project, i) => (

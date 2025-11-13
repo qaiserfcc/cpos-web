@@ -17,31 +17,31 @@ export function ServicesSection() {
           }`}
         >
           <h2 className="mb-2 font-sans text-5xl font-light tracking-tight text-foreground md:text-6xl lg:text-7xl">
-            Capabilities
+            Solutions
           </h2>
-          <p className="font-mono text-sm text-foreground/60 md:text-base">/ What we bring to the table</p>
+          <p className="font-mono text-sm text-foreground/60 md:text-base">/ Complete retail management platform</p>
         </div>
 
         <div className="grid gap-8 md:grid-cols-2 md:gap-x-16 md:gap-y-12 lg:gap-x-24">
           {[
             {
-              title: "Creative Development",
-              description: "Pushing the boundaries of what's possible on the web",
+              title: "Payment Processing",
+              description: "Secure payment gateway integration with multiple payment methods and real-time transaction processing",
               direction: "top",
             },
             {
-              title: "Visual Design",
-              description: "Crafting memorable experiences through thoughtful aesthetics",
+              title: "Inventory Control",
+              description: "Automated stock tracking, low-stock alerts, and intelligent reordering to optimize your supply chain",
               direction: "right",
             },
             {
-              title: "Motion & Animation",
-              description: "Bringing interfaces to life with purposeful movement",
+              title: "Sales Analytics",
+              description: "Comprehensive reporting and insights to track performance, customer behavior, and business trends",
               direction: "left",
             },
             {
-              title: "Technical Strategy",
-              description: "Building scalable solutions that perform beautifully",
+              title: "Customer Management",
+              description: "Build customer profiles, track purchase history, and implement loyalty programs for repeat business",
               direction: "bottom",
             },
           ].map((service, i) => (
